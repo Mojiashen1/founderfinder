@@ -1,4 +1,5 @@
 # from linkedin_scraper import Person
+from selenium import webdriver
 from linkedin_scraper import Person, Experience, Education
 from linkedin_scraper.functions import time_divide
 
@@ -8,9 +9,28 @@ from collections import namedtuple
 
 class Related(Person):
     def __init__(self, linkedin_url = None, experiences = [], educations = [], driver = None, scrape = True, related = [], depth=0):
-        super().__init__(linkedin_url, experiences, educations, driver, False)
+        # super().__init__(linkedin_url, experiences, educations, driver, scrape=False)
+        self.linkedin_url = linkedin_url
+        self.experiences = experiences
+        self.educations = educations
         self.related = related
         self.depth = depth
+
+        if driver is None:
+            try:
+                if os.getenv("CHROMEDRIVER") == None:
+                    driver_path = os.path.join(os.path.dirname(__file__), 'drivers/chromedriver')
+                else:
+                    driver_path = os.getenv("CHROMEDRIVER")
+
+                driver = webdriver.Chrome(driver_path)
+                driver.add_argument("--incognito") # open in incognito
+            except:
+                driver = webdriver.Chrome()
+                driver.add_argument("--incognito") # open in incognito
+
+        driver.get(linkedin_url)
+        self.driver = driver
 
         if scrape:
             self.scrape(True)

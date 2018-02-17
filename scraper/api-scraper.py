@@ -23,11 +23,14 @@ class Related(Person):
                 else:
                     driver_path = os.getenv("CHROMEDRIVER")
 
-                driver = webdriver.Chrome(driver_path)
-                driver.add_argument("--incognito") # open in incognito
+                
+                options = webdriver.ChromeOptions()
+                options.add_argument("--incognito") # open in incognito
+                driver = webdriver.Chrome(driver_path, chrome_options=options)
             except:
-                driver = webdriver.Chrome()
-                driver.add_argument("--incognito") # open in incognito
+                options = webdriver.ChromeOptions()
+                options.add_argument("--incognito") # open in incognito
+                driver = webdriver.Chrome(chrome_options=options)
 
         driver.get(linkedin_url)
         self.driver = driver
@@ -39,10 +42,8 @@ class Related(Person):
         self.related.append(url)
 
     def scrape(self, close_on_complete=True):
-        if self.is_signed_in():
-            self.scrape_logged_in(close_on_complete=close_on_complete)
-        else:
-            self.scrape_not_logged_in(close_on_complete=close_on_complete)
+        self.scrape_not_logged_in(close_on_complete=close_on_complete)
+            
 
     def scrape_not_logged_in(self, close_on_complete=True, retry_limit = 10):
         driver = self.driver
@@ -103,10 +104,15 @@ class Related(Person):
         if close_on_complete:
             driver.close()
 
-def main():
-    person = Related("https://www.linkedin.com/in/radhikaemens")
-    print(person.related)
+        for r in self.related:
+            new_persons = Related(r, depth=self.depth+1)
 
+def main():
+    SEEDS = ['radhikaemens', 'anqi-lu-5aa507a8', 'kishanemens']
+    URLS = ['https://www.linkedin.com/in/' + name for name in SEEDS]
+
+    for url in URLS:
+        person = Related(url, depth = 0)
 
 def open_browser(url):
     return p

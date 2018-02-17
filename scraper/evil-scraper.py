@@ -23,14 +23,13 @@ class Related(Person):
                 else:
                     driver_path = os.getenv("CHROMEDRIVER")
 
-                
                 options = webdriver.ChromeOptions()
                 options.add_argument("--incognito") # open in incognito
-                driver = webdriver.Chrome(driver_path, chrome_options=options)
+                driver = webdriver.Chrome(driver_path)#, chrome_options=options)
             except:
                 options = webdriver.ChromeOptions()
                 options.add_argument("--incognito") # open in incognito
-                driver = webdriver.Chrome(chrome_options=options)
+                driver = webdriver.Chrome()#chrome_options=options)
 
         driver.get(linkedin_url)
         self.driver = driver
@@ -41,9 +40,11 @@ class Related(Person):
     def add_related(self, url):
         self.related.append(url)
 
+    def get_related(self):
+        return self.related
+
     def scrape(self, close_on_complete=True):
         self.scrape_not_logged_in(close_on_complete=close_on_complete)
-            
 
     def scrape_not_logged_in(self, close_on_complete=True, retry_limit = 10):
         driver = self.driver
@@ -104,15 +105,15 @@ class Related(Person):
         if close_on_complete:
             driver.close()
 
-        for r in self.related:
-            new_persons = Related(r, depth=self.depth+1)
-
 def main():
-    SEEDS = ['radhikaemens', 'anqi-lu-5aa507a8', 'kishanemens']
-    URLS = ['https://www.linkedin.com/in/' + name for name in SEEDS]
+    # SEEDS = ['radhikaemens', 'anqi-lu-5aa507a8', 'kishanemens']
+    SEEDS = ['radhikaemens']
+    URLS = ['http://www.google.ie/gwt/x?u=' + 'https://www.linkedin.com/in/' + name for name in SEEDS]
 
     for url in URLS:
-        person = Related(url, depth = 0)
+        person = Related(url, depth=0)
+        related = person.get_related()
+        print(related)
 
 def open_browser(url):
     return p

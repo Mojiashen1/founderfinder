@@ -2,6 +2,8 @@
 from linkedin_scraper import Person, Experience, Education
 from linkedin_scraper.functions import time_divide
 
+from selenium.common.exceptions import NoSuchElementException
+
 from collections import namedtuple
 
 class Related(Person):
@@ -15,7 +17,6 @@ class Related(Person):
 
     def add_related(self, url):
         self.related.append(url)
-
 
     def scrape(self, close_on_complete=True):
         if self.is_signed_in():
@@ -35,40 +36,48 @@ class Related(Person):
         self.name = driver.find_element_by_id("name").text
 
         # get experience
-        exp = driver.find_element_by_id("experience")
-        for position in exp.find_elements_by_class_name("position"):
-            position_title = position.find_element_by_class_name("item-title").text
-            company = position.find_element_by_class_name("item-subtitle").text
+        try:
+            exp = driver.find_element_by_id("experience")
+            for position in exp.find_elements_by_class_name("position"):
+                position_title = position.find_element_by_class_name("item-title").text
+                company = position.find_element_by_class_name("item-subtitle").text
 
-            try:
-                times = position.find_element_by_class_name("date-range").text
-                from_date, to_date, duration = time_divide(times)
-            except:
-                from_date, to_date = (None, None)
-            experience = Experience( position_title = position_title , from_date = from_date , to_date = to_date)
-            experience.institution_name = company
-            self.add_experience(experience)
+                try:
+                    times = position.find_element_by_class_name("date-range").text
+                    from_date, to_date, duration = time_divide(times)
+                except:
+                    from_date, to_date = (None, None)
+                experience = Experience( position_title = position_title , from_date = from_date , to_date = to_date)
+                experience.institution_name = company
+                self.add_experience(experience)
+        except NoSuchElementException:
+            pass
 
-        # get education
-        edu = driver.find_element_by_id("education")
-        for school in edu.find_elements_by_class_name("school"):
-            university = school.find_element_by_class_name("item-title").text
-            degree = school.find_element_by_class_name("original").text
-            try:
-                times = school.find_element_by_class_name("date-range").text
-                from_date, to_date, duration = time_divide(times)
-            except:
-                from_date, to_date = (None, None)
-            education = Education(from_date = from_date, to_date = to_date, degree=degree)
-            education.institution_name = university
-            self.add_education(education)
+        try:
+            # get education
+            edu = driver.find_element_by_id("education")
+            for school in edu.find_elements_by_class_name("school"):
+                university = school.find_element_by_class_name("item-title").text
+                degree = school.find_element_by_class_name("original").text
+                try:
+                    times = school.find_element_by_class_name("date-range").text
+                    from_date, to_date, duration = time_divide(times)
+                except:
+                    from_date, to_date = (None, None)
+                education = Education(from_date = from_date, to_date = to_date, degree=degree)
+                education.institution_name = university
+                self.add_education(education)
+        except NoSuchElementException:
+            pass
 
-        # get related
-        related = driver.find_element_by_class_name("browse-map--swapped")
-        for person in related.find_elements_by_class_name("profile-card"):
-            url = person.find_element_by_tag_name('a').get_attribute('href')
-            self.add_related(url)
-
+        try:
+            # get related
+            related = driver.find_element_by_class_name("browse-map--swapped")
+            for person in related.find_elements_by_class_name("profile-card"):
+                url = person.find_element_by_tag_name('a').get_attribute('href')
+                self.add_related(url)
+        except NoSuchElementException:
+            pass
 
         # get
         if close_on_complete:
